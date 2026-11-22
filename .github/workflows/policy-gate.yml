@@ -1,0 +1,51 @@
+name: Infrastructure Security Policy Gate
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+     - main
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Python Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/setup-python@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+
+      - name: Run unit tests
+        run: python3 -m unittest discover -s tests -v
+
+  policy-validation:
+    name: Infrastructure Policy Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Validate Infrastructure Resources
+        run: python3 -m scripts.check_inventory
+
+      - name: Upload validation report
+        if: always()
+        uses: action/upload-artifact@v7
+        with:
+          name: infrastructure-policy-report
+          path: reports/policy-report.json
+          if-no-files-found: warn
